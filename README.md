@@ -1,6 +1,6 @@
 # AirFrameXR-agentic 0.1 (experimental)
 
-> **Version 0.1.0, experimental.** A small local model proposes changes to your AirFrameXR settings and you approve each one. Expect rough edges; read the Status section for what was and was not tested.
+> **Version 0.1.1, experimental.** A small local model proposes changes to your AirFrameXR settings and you approve each one. Expect rough edges; read the Status section for what was and was not tested.
 
 A local AI assistant for [AirFrameXR](https://github.com/jfbobier/AirFrameXR) that replaces the manual. It runs entirely on your own NVIDIA GPU:
 you describe what you see in the headset ("Gears of War judders", "double image in frame generation"), it reads **your** logs and settings, proposes
@@ -20,7 +20,7 @@ does is what this repository is for finding out.
 - The model holds about **13 GB of VRAM while the agent runs**. Close your game first, and run `stop.bat` before you play.
 
 ## Install (one file)
-Download **`setup.bat`** from the [0.1 release](https://github.com/jfbobier/AirFrameXR-agentic/releases/tag/v0.1.0), put it **in your AirFrameXR folder** (next to `AirFrameXR.exe`) and double-click it. It installs everything into `AirFrameXR\agentic\`
+Download **`setup.bat`** from the [0.1.1 release](https://github.com/jfbobier/AirFrameXR-agentic/releases/tag/v0.1.1), put it **in your AirFrameXR folder** (next to `AirFrameXR.exe`) and double-click it. It installs everything into `AirFrameXR\agentic\`
 (about 9 GB of model plus 8 GB of runtime, 10-30 minutes; run it again if it stops, it resumes) and adds `AirFrameXR-Assistant.bat` to start it.
 To uninstall, delete `AirFrameXR\agentic\` and that .bat.
 

@@ -2,7 +2,7 @@
 #   - finds the AirFrameXR folder (the folder setup.bat is in, the active OpenXR runtime, a running streamer, or asks)
 #   - downloads this repository (GitHub zip), copies it to <AirFrameXR>\agentic (an update keeps runtime, state, notes, logs, docs-cache and your opencode.user.json)
 #   - runs install.ps1 there (the model is ~9 GB), then adds <AirFrameXR>\AirFrameXR-Assistant.bat
-param([string]$StartDir = '', [string]$AirFrameXRDir = '', [string]$Ref = 'v0.1.0', [string]$ZipPath = '', [switch]$SkipModel, [switch]$Force, [string]$WheelPath = '')
+param([string]$StartDir = '', [string]$AirFrameXRDir = '', [string]$Ref = 'v0.1.1', [string]$ZipPath = '', [switch]$SkipModel, [switch]$Force, [string]$WheelPath = '')
 $ErrorActionPreference = 'Stop'
 $ProgressPreference = 'SilentlyContinue'
 function Say([string]$t) { Write-Host $t }

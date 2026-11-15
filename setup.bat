@@ -6,12 +6,12 @@ if exist "%~dp0scripts\install.ps1" (
   exit /b %errorlevel%
 )
 set "BS=%TEMP%\afxr-agentic-bootstrap.ps1"
-curl.exe -L --fail -s -S -o "%BS%" https://raw.githubusercontent.com/jfbobier/AirFrameXR-agentic/v0.1.0/scripts/bootstrap.ps1
+curl.exe -L --fail -s -S -o "%BS%" https://raw.githubusercontent.com/jfbobier/AirFrameXR-agentic/v0.1.1/scripts/bootstrap.ps1
 if errorlevel 1 (
   echo Download failed. Check your internet connection.
   pause
   exit /b 1
 )
-powershell -NoProfile -ExecutionPolicy Bypass -File "%BS%" -StartDir "%~dp0" %*
+powershell -NoProfile -ExecutionPolicy Bypass -File "%BS%" -StartDir "%~dp0." %*
 if errorlevel 1 echo Setup stopped, see the message above. Run setup.bat again to resume.
 pause
