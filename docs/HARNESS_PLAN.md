@@ -133,3 +133,6 @@ human: false           # true = written or edited by you: the generator never ov
 | M4 | KB-by-version artifact and the `update-docs` change; the by-hand `kb check` routine documented | GitHub only |
 | M5 | field loop: journal outcomes, new FAQ entries from real questions | users |
 Golden vectors from the C# originals wait for the builder; until then the Python references that already self-test and the worked numbers in the docs stand in.
+
+## 12. Status
+Plan and tool catalog committed 2026-11-15 (`docs/TOOL_CATALOG.md` section I: curated rules reviewed by the author). **Execution waits for the builder** (golden vectors from the C# originals, the Black Box fixtures, the MCP spike on the 5090). Nothing in `kb/` or `tools/` exists yet.

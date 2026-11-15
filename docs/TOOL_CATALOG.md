@@ -170,7 +170,9 @@ Report shape (read from a real recording, `private/logs/5090-2026-10-30-blackbox
 | `bb_capabilities(path)` | which counters were unavailable and why (blank, never 0) | `capabilities.csv` | P1 |
 | `bb_frames_stats(csv)` | recompute gap / queue / encode percentiles from `host_frames.csv` to double-check a report | harness `frames.py` | P2 |
 
-### I. Rules to confirm with the author (curated, not extracted: each is a place where I read a doc or a log and a person should say "yes, that is the rule")
+### I. Curated rules (not extracted: each is a place where a doc or a log was read and a person should say "yes, that is the rule")
+**Status 2026-11-15: the author reviewed these and judged them sound as proposed** (the step size, the 60 s short-run limit and the other values below stand as defaults until a measurement says otherwise). Items 4, 5, 6 and 7 still need their concrete value or meaning filled in during execution: the builder can answer 6 (limiter bit 0x400) and the 80 % vs 50/70 % reconciliation from the code.
+
 1. **A black band or box at an edge means that edge's value is too small: raise it** (`symptom_to_edge`): from the validator's message and the "Check it" paragraph of AVP_FOV.md. Step size default 2 degrees: a default, not a measurement.
 2. **Smoothness is judged by `headset repeated %` (and host repeats), never by streamed vs rendered fps.** Evidence: the real SWGR record (rendered 98.8, streamed 74.0, level off, repeated 1.0 %) was read as a streaming bottleneck by every local model tested. I do not know why streamed is below rendered there; the interpreter says "look at the repeat percentages" and flags the gap as a question, not a finding.
 3. **Short runs**: a run under N seconds is not typical (the 38 s SWGR run produced 7.2 % / 59.5 %). N is a guess (60 s?).
