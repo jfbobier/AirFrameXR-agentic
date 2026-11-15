@@ -2,14 +2,15 @@
 
 All logs are under `<AirFrameXR>\logs`. `AirFrameXR.log` always exists (appended, rotates at 10 MB). Never print a whole log.
 
-## The three lines that matter (general log, always on)
-```powershell
-$log = '<AirFrameXR>\logs\AirFrameXR.log'
-Get-Content $log -Tail 3000 | Select-String 'game run recorded'            # one per finished game
-Get-Content $log -Tail 3000 | Select-String 'frame generation perf' | Select-Object -Last 6     # every 10 s while a game runs
-Get-Content $log -Tail 3000 | Select-String 'frame generation samples' | Select-Object -Last 3
-Get-Content $log -Tail 3000 | Select-String -Pattern ' WARN | ERROR ' | Select-Object -Last 15
-```
+## How to read (use the agent's own tools, not the shell)
+The shell on Windows is cmd.exe: PowerShell commands such as `Get-Content` do not work there. Use the **grep** tool (pattern + path) and the **read**
+tool (with offset/limit), which are allowed without asking. All logs are under `<AirFrameXR>\logs`; `AirFrameXR.log` always exists (appended, rotates at 10 MB).
+- Finished games: grep `game run recorded` in `<AirFrameXR>\logs\AirFrameXR.log`
+- While a game ran: grep `frame generation perf` and `frame generation samples`
+- Problems: grep ` WARN ` and ` ERROR `
+- The Vision Pro appears in the logs as **"Apple Headset"**; a Quest as "Meta Quest ...". A line with the other name is not a different device.
+- Take the LAST few matches (latest dates); say which date/time you read.
+
 | Line | Read | Means |
 |---|---|---|
 | `game run recorded: <exe> on <headset> at <level>, N s, X fps rendered (slowest tenth Y), Z streamed, headset repeated A % typical / B % worst` | rendered vs streamed fps; A and B | A = share of display refreshes where the headset had no new frame. **Under 5 % typical = a clean run** (the project's own rule). Over 5 % = the user probably saw judder |
@@ -24,11 +25,7 @@ Get-Content $log -Tail 3000 | Select-String -Pattern ' WARN | ERROR ' | Select-O
 - `client_graph.csv`: the headset's per-frame latency.
 - Debug logging slows the stream itself (about 4.6 ms per frame, known bug): use it for one diagnosing session, then ask the user to turn it off.
 
-```powershell
-$d = Get-ChildItem '<AirFrameXR>\logs\debug' -Directory | Sort-Object Name | Select-Object -Last 1
-Get-Content "$($d.FullName)\gpu.csv" -TotalCount 2          # header + first row: learn the column names first
-Get-Content "$($d.FullName)\host_events.jsonl" -Tail 400 | Select-String 'encoder_stats' | Select-Object -Last 3
-```
+Read `gpu.csv`'s first line to learn its column names before using it; grep `encoder_stats` in `host_events.jsonl` and take the last few.
 
 ## Built-in tools to ask the user to run (they stop the streamer)
 - Launcher card **Diagnostics (experimental)** (= `bin\configure.exe --diagnose`): tests encoder, network and a short scene on the settings as they are; shows suggestions with Apply buttons (arrival margin, GPU keep-alive).

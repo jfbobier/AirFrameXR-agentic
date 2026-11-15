@@ -9,7 +9,7 @@ This repository's own scripts and texts are MIT (see LICENSE). It downloads, but
 | CUTLASS | compiled into vLLM's FP8/NVFP4 kernels; `wheel-build\patches\cutlass-windows-sm120.patch` is a small Windows build fix | BSD-3-Clause | https://github.com/NVIDIA/cutlass |
 | PyTorch, torchvision, torchaudio | installed from the PyTorch CUDA 13 index | BSD-style | https://pytorch.org |
 | triton-windows | Triton kernels on Windows | MIT | https://github.com/woct0rdho/triton-windows |
-| opencode 1.19.5 | the terminal agent shell, downloaded from its GitHub release | MIT | https://github.com/anomalyco/opencode |
+| opencode 2.3.0 | the terminal agent shell, downloaded from its GitHub release | MIT | https://github.com/anomalyco/opencode |
 | uv | creates the Python environment | MIT or Apache-2.0 | https://github.com/astral-sh/uv |
 | Gemma 4 12B (instruction tuned) | the default model, downloaded from Hugging Face (`unsloth/gemma-4-12b-it-NVFP4`, an NVFP4 quantisation of Google's `google/gemma-4-12B-it`); weights are never stored in this repository | Apache-2.0 (as declared on both model cards) | https://huggingface.co/google/gemma-4-12B-it |
 | The other Python packages | pinned in `requirements.lock.txt`, installed from PyPI | each its own | |

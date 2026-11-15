@@ -12,6 +12,6 @@
   "maxNumBatchedTokens": 1024,
   "toolParser": "gemma4",
   "reasoningParser": "gemma4",
-  "extraServeArgs": [],
+  "extraServeArgs": ["--language-model-only"],
   "measured": false
 }

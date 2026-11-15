@@ -7,5 +7,5 @@
   "python": "3.13",
   "torchIndex": "https://download.pytorch.org/whl/cu130",
   "uvVersion": "0.12.13",
-  "opencodeVersion": "1.19.5"
+  "opencodeVersion": "2.3.0"
 }
