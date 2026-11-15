@@ -96,8 +96,8 @@ Scenario noise with a small model (hence N = 5 and paired seeds); overfitting to
 
 ## 9. The tool layer: offload reasoning to code (`docs/TOOL_CATALOG.md`)
 A small model cannot be relied on for tangent arithmetic, threshold rules or valid JSON edits; it can pick a named tool and fill typed parameters. So the
-KB is two things: **text** (brief, digests, FAQ) for what is judgement and wording, and **tools** for what is a rule or a number. Eight intent-level tools
-(`afxr_status`, `diagnose`, `explain_setting`, `fov_check`, `fov_plan`, `calc`, `propose_change`, `apply_change`/`undo_change`) over an internal library of pure
+KB is two things: **text** (brief, digests, FAQ) for what is judgement and wording, and **tools** for what is a rule or a number. Twelve intent-level tools
+(`afxr_status`, `diagnose`, `game_stats`, `blackbox`, `explain_setting`, `fov_check`, `fov_plan`, `resolution_plan`, `calc`, `propose_change`, `apply_change`, `undo_change`) over an internal library of pure
 functions ported from AirFrameXR's own code (`Advice.cs`, `FovValidator`, `PipelineModel`, `harness/fov_stream_geometry.py`) and proven with golden vectors
 generated from the originals. Writes go through `propose_change` -> user approval -> `apply_change` (backup, atomic write, parse check, journal), so "one change at a time"
 is enforced by code. Served as a small stdlib MCP server in the Python that already ships with vLLM; fallback: allow-listed `python tools\afxr.py` commands.
@@ -127,7 +127,7 @@ human: false           # true = written or edited by you: the generator never ov
 | | Content | Needs |
 |---|---|---|
 | M0 | `kb/` skeleton; FAQ schema + 20-30 seed entries (draft) for your review; the vendored `fov_stream_geometry.py`; `fov_check` / `fov_plan` / `calc` with golden vectors from the docs' worked numbers; `kb check` for keys and log patterns | Linux only |
-| M1 | the Advice.cs rules and log parsers (`diagnose`, `afxr_status`); facts YAML (`explain_setting`); `propose_change` / `apply_change` / `undo_change` with backup and journal; the renderer for tiers 0-1 and the token report | Linux only |
+| M1 | the Advice.cs rules and log parsers (`diagnose`, `afxr_status`), the game-record reader (`game_stats`) and the Black Box report parser and lever map (`blackbox`, fixture: the 2026-10-30 5090 recording); `resolution_plan` on the vendored geometry; facts YAML (`explain_setting`); `propose_change` / `apply_change` / `undo_change` with backup and journal; the renderer for tiers 0-1 and the token report | Linux only |
 | M2 | **MCP spike** (opencode 2.3 discovery, permission names, a 12B's tool-call accuracy), the runner and scorer, scenarios from the FAQ, the baseline | the 5090 |
 | M3 | A/B experiments (section 4 of the earlier plan) plus tool vs no-tool for each FAQ entry | the 5090 |
 | M4 | KB-by-version artifact and the `update-docs` change; the by-hand `kb check` routine documented | GitHub only |
