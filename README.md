@@ -15,7 +15,7 @@ does is what this repository is for finding out.
 ## Requirements
 - Windows 10/11, **NVIDIA RTX 50 series (Blackwell)**, driver 580 or newer, **16 GB of VRAM or more** (RTX 5070 Ti and up). The bundled vLLM carries native Blackwell FP4/FP8 kernels only; older cards are refused by the installer.
 - About 30 GB of free disk. AirFrameXR installed (the assistant works without it, from the docs only).
-- The model holds about **12 GB of VRAM while the agent runs**. Close your game first, and run `stop.bat` before you play.
+- The model holds about **13 GB of VRAM while the agent runs**. Close your game first, and run `stop.bat` before you play.
 
 ## Use
 1. `install.bat` (10-30 minutes, mostly downloads; run it again if it stops, it resumes).
@@ -37,10 +37,25 @@ does is what this repository is for finding out.
 The playbooks carry mechanisms and rules, not numbers: the numbers live in AirFrameXR's docs and are read from there, so they cannot drift.
 
 ## The model
-Default: **Gemma 4 12B instruction-tuned, NVFP4** (`unsloth/gemma-4-12b-it-NVFP4`, 9.3 GB of weights, Apache-2.0). Why this one:
-- It must fit about 12 GB with room for context. Qwen 3.8's smallest official model is 27B (21 GB in NVFP4) and DeepSeek V4 is far larger; neither fits. Gemma 4 12B is the strongest tool-calling model that does, and vLLM 0.33 has native Gemma 4 support (`gemma4` tool and reasoning parsers).
-- NVFP4 runs natively on Blackwell tensor cores (that is what the bundled wheel adds on Windows).
-- Alternatives are one line in `config\model.json` (for example `unsloth/gemma-4-E4B-it-NVFP4`, 8.1 GB, weaker; `RedHatAI/gemma-4-12B-it-NVFP4`, 10.3 GB). On a 24-32 GB card a larger model gives better answers (the maintainer runs Qwen 3.8 27B NVFP4 on an RTX 5090): change `repo`, `revision`, `servedName`, `targetVramGB` and the parsers together.
+Default: **Gemma 4 12B instruction-tuned, NVFP4** (`unsloth/gemma-4-12b-it-NVFP4`, 9.3 GB download, Apache-2.0), served with a 13 GB budget and an
+**81,920-token context** (101k tokens of KV cache). The context is the point: the brief, both playbooks and the docs index are loaded whole, and a search
+result or a log excerpt fits beside them. Measured on the RTX 5090 with a 13 GB cap (2026-11-15): a fact buried in an 82k-token prompt of the real docs was found.
+
+Why not smaller (the download would be 4-5 GB): two smaller NVFP4 models were run through the same real session (the agent reads a real AirFrameXR log and must
+propose one change, through opencode, 2-3 runs each, one scenario, judged by hand):
+
+| Model | Download | Result |
+|---|---|---|
+| Qwen3.5 4B NVFP4 | 4.2 GB | reads the right files but the answer is incoherent (fragments, an invented cause, a bitrate change not supported by the log). Not trusted with settings |
+| Qwen3 8B NVFP4 (NVIDIA) | 6.4 GB | tried to edit files when told not to (the permission rules blocked it), wrong reasoning, one run gave no answer |
+| **Gemma 4 12B NVFP4** | 9.3 GB | follows the brief: reads evidence, quotes lines with dates, one proposal in the five-point form, asks before acting. Still imperfect (it once proposed a rate while frame generation was off): the user approves every edit |
+
+Qwen 3.8's smallest official model is 27B (21 GB in NVFP4) and DeepSeek V4 is far larger; neither fits a 16 GB card. A bigger model gives better answers
+if your card allows it (the maintainer runs Qwen 3.8 27B NVFP4 on an RTX 5090): change `repo`, `revision`, `servedName`, `targetVramGB`, the parsers and
+`contextTokens` together in `config\model.json`. `eval\agent_eval.py` (behaviour checks) and `eval\needle.py` (long context) test any model against a running server.
+
+**This is a small model editing your settings.** That is why every edit asks for your approval and shows its diff, why a backup is made first, and why it
+may only change the keys listed in `agent\playbook\knobs.md`. Read what it proposes; the journal in `notes\changes.md` records everything it did.
 
 ## Status (what was and was not tested)
 Nothing here is "works" until its row says so.
@@ -49,11 +64,12 @@ Nothing here is "works" until its row says so.
 |---|---|
 | Scripts parse in Windows PowerShell 5.1 | checked |
 | Fresh install into an empty folder on the RTX 5090 PC (2026-11-15, `install.bat -SkipModel`, then with the model) | **passed**: uv, Python 3.13, torch cu130 + 153 pinned packages, the wheel (checksum verified), smoke test on the GPU (matmul, FP8, NVFP4 all OK), opencode 1.19.5, docs copy, model download (8.7 GB, 96 s on that line); total env about 8.5 GB. Not run: a PC without the previous vLLM, the wheel download from the GitHub release (the repo is not published yet: a local wheel with the same checksum was used) |
-| Gemma 4 12B NVFP4 loads on vLLM 0.33 in a 12 GB budget | not run yet |
-| Tool calls through the `gemma4` parser | not run yet |
-| opencode accepts the generated config and permission rules | not run yet |
-| Answer quality against real AirFrameXR logs | not run yet |
-| 16 GB card (RTX 5070 Ti) | not run: the budget is computed from your VRAM, no 16 GB card was available |
+| Gemma 4 12B NVFP4 loads on vLLM 0.33 inside the 13 GB budget (`--language-model-only` is required: the vision encoder budget otherwise exceeds the batch size) | **passed** on the RTX 5090 capped at 13 GB: 101k tokens of KV cache, 81,920 context |
+| Tool calls through the `gemma4` parser, opencode 2.3.0 | **passed**: `opencode run` made grep/read calls and read-only commands; `eval\agent_eval.py` 5/5 (reads evidence first, refuses an invented key, will not touch the registry, proposes with restart rule and verification) |
+| opencode accepts the generated config and enforces the permission rules | **passed** headless: asks are auto-rejected in a non-interactive run (an edit and a delete were blocked). **Not tested**: the interactive TUI approval flow |
+| Nothing leaves the PC | opencode falls back to its own hosted free models when no local model answers (seen in a test run). `enabled_providers: ["vllm"]` plus `OPENCODE_DISABLE_FREE_MODELS`/`MODELS_FETCH`/`AUTOUPDATE` are now set; with the server down the run fails with "No model is available". **Not audited**: a packet capture of a full session |
+| Answer quality against real AirFrameXR logs | **partly**: one scenario (judder in a game, real log), 2-3 runs per model, judged by hand. Proposals were grounded in the log and the playbook but not always the best lever. No headset test of any proposed change |
+| 16 GB card (RTX 5070 Ti) | not run: 13 GB is capped on a 32 GB card; a real 16 GB card also carries the Windows desktop (about 1-1.5 GB) |
 
 ## Where the wheel comes from
 vLLM has no Windows build with native Blackwell FP4 kernels, so `wheel-build\` holds how the one used here was made: upstream vLLM 0.33.0 + the community

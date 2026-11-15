@@ -1,6 +1,6 @@
 # Docs index (copies of the AirFrameXR project docs in `docs-cache\`)
 
-Search first, read second. `Select-String -Path docs-cache\*.md -Pattern 'frame_gen_rate' -Context 0,3`
+Search first (grep tool), read second (read tool, a small range).
 
 | File | Answers | Notes |
 |---|---|---|

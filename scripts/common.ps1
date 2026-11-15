@@ -50,6 +50,7 @@ function Initialize-Contained {
         UV_CACHE_DIR = "$c\uv"; UV_PYTHON_INSTALL_DIR = "$($script:RT)\python"; UV_PYTHON_PREFERENCE = 'only-managed'
         PYTHONNOUSERSITE = '1'; TMP = "$($script:RT)\tmp"; TEMP = "$($script:RT)\tmp"
         VLLM_USE_FLASHINFER_SAMPLER = '0'
+        OPENCODE_DISABLE_FREE_MODELS = '1'; OPENCODE_DISABLE_MODELS_FETCH = '1'; OPENCODE_DISABLE_AUTOUPDATE = '1'; OPENCODE_DISABLE_CLAUDE_CODE = '1'
     }
     foreach ($k in $e.Keys) { [Environment]::SetEnvironmentVariable($k, $e[$k], 'Process') }
 }

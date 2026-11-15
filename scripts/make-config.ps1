@@ -29,8 +29,9 @@ foreach ($c in 'Remove-Item *', 'rm *', 'del *', 'rmdir *', 'git push *', 'git r
 $cfg = [ordered]@{
     '$schema'    = 'https://opencode.ai/config.json'
     update       = 'disable'
+    enabled_providers = @('vllm')                       # the local server only: no hosted/free models, ever
     model        = "vllm/$($m.servedName)"
-    instructions = @("$rootS/agent/AGENTS.md", "$rootS/state/machine.md")
+    instructions = @("$rootS/agent/AGENTS.md", "$rootS/agent/playbook/knobs.md", "$rootS/agent/playbook/diagnose.md", "$rootS/agent/docs-index.md", "$rootS/state/machine.md")
     providers    = [ordered]@{ vllm = [ordered]@{
         name     = 'vLLM (local, AirFrameXR-agentic)'
         settings = [ordered]@{ baseURL = 'http://127.0.0.1:8000/v1' }
