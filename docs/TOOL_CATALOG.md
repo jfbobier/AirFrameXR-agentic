@@ -4,22 +4,27 @@ Principle: **the model decides what to ask and how to say it; code decides every
 well-named tool and fill typed parameters; it cannot be trusted to do tangent arithmetic, apply a threshold from memory or write valid JSON.
 Nothing below exists yet. Every item says where its truth lives, so it is ported, not invented.
 
+**Delivery (decided 2026-11-15): no MCP server.** The tools are one stdlib-Python CLI behind a launcher, `agentic\afxr.bat <tool> key=value ...`, and the model learns them from `agent\TOOLS.md`, which is loaded with the rest of the brief. opencode's Windows shell is cmd.exe, so a `.bat` runs as is. Leaner (no server, no protocol, no extra process), debuggable (the user can paste any command the agent ran and get the same output), and the eval harness calls the same CLI directly.
+
 ## 1. Conventions
 
-- **Two layers.** A small *exposed surface* (12 intent-level tools, section 2: what the model sees and chooses between; several take an `action` enum instead of becoming separate tools) over a larger *internal library* (section 3: pure functions, unit-tested, reused by several tools). Few tools = fewer wrong choices; the library can grow freely. Tool-selection accuracy is a measured eval family: if it is low, tools are merged behind an `action` enum, not multiplied.
+- **Command grammar for a small model.** `afxr.bat <tool> [action] key=value ...`; plain `key=value` pairs, never JSON (quoting JSON in cmd.exe is a trap); `--key value` and `--key=value` also accepted; units inline (`amount=2deg`, `hz=100`); case-insensitive; unambiguous abbreviations of tool names and keys accepted. A wrong command exits non-zero with the usage line and a "did you mean" and writes nothing. `afxr.bat help` and `afxr.bat help <tool>` print the same text as `TOOLS.md`.
+- **Output.** Default is a short plain-text block (`CONCLUSION`, `FACTS`, `RECOMMEND`, `EVIDENCE`, `CAVEATS`, `NEXT`), which a small model reads better than JSON; `json=1` prints the structured form for the harness.
+- **One source.** `kb/tools/catalog.yaml` (name, description, parameters, example call, example result, source of truth, permission) renders `agent/TOOLS.md`, the CLI's argument parser and `help`, and the tool-call eval cases, so the three cannot drift. A check runs every documented example and compares the result.
+- **Two layers.** A small *exposed surface* (12 intent-level tools, section 2: what the model reads about in `TOOLS.md` and chooses between; several take an `action` word instead of becoming separate tools) over a larger *internal library* (section 3: pure functions, unit-tested, reused by several tools). Few tools = fewer wrong choices; the library can grow freely. Tool-selection accuracy is a measured eval family: if it is low, tools are merged behind an `action` enum, not multiplied.
 - **Intent-level, not function-level.** `fov_plan` does the whole job (parse the symptom, compute, validate, report the pixel cost). The model never chains `tan`, `atan` and a validator.
 - **Results carry the wording.** Every result is `{ok, conclusion, facts, recommend[], evidence[], caveats[], next[]}`: `conclusion` is one plain sentence the model can read out; `recommend` entries name the exact control or `propose_change` arguments; `evidence` points at file and line; `caveats` carry the "untested / judgement" flags from the docs; `next` names the tool to call after.
 - **Errors never raise.** `{ok:false, why, ask_user}`: what was wrong in words, and the one question to put to the user.
 - **Units in names** (`_deg`, `_tan`, `_ms`, `_mbps`, `_px`); numbers rounded for speech (tangents 2 decimals, angles 1, as the UI shows them), exact values kept in `facts`.
 - **Deterministic.** Same inputs, same output; no clock except an explicit `now`; no network.
-- **Read-only unless the name says otherwise.** Only `apply_change` and `undo_change` write, and the user approves each (permission `ask`); the others are allowed without prompting.
+- **Read-only unless the name says otherwise.** Only `apply_change` and `undo_change` write. They are `ask` in the shell permissions, and the code adds its own guard: `apply` accepts only a proposal id that `propose_change` created and that has not expired, so a loosened allow-list cannot become a free-form write. The others are allowed without prompting by command pattern (`*afxr.bat diagnose*` and so on; a command worded differently just asks the user).
 - **Golden vectors or it does not ship.** Each function has vectors generated from AirFrameXR's own implementation (the C# in `tools/gui/`, the Rust host, or `harness/fov_stream_geometry.py`, which already self-tests against the shader's equations). A function with no vector is a draft. The suite runs on Linux.
 - **Reuse before writing.** `harness/fov_stream_geometry.py` and `harness/lib.py` (`fov_vars`) are vendored with provenance (same author, MIT); `Advice.cs` thresholds and `FovValidator` are ported line by line.
 - Stdlib (plus numpy, already in the runtime) so it runs on the Python that ships with vLLM; no .exe.
 
-## 2. The exposed surface (12 tools) with the text the model sees
+## 2. The exposed surface (12 tools) and the text the model reads (`TOOLS.md`)
 
-Descriptions are what goes in the tool definition: imperative, say *when* to call, say what it does not do.
+Descriptions are what `TOOLS.md` tells the model: imperative, say *when* to call, say what it does not do. "Params" are the `key=value` pairs; the call looks like `agentic\afxr.bat fov_plan symptom=black_band edge=lower amount=a_little`. Permissions are shell-command patterns.
 
 | # | Tool | Description shown to the model | Params (typed) | Writes | Permission |
 |---|---|---|---|---|---|
@@ -188,8 +193,8 @@ Taste ("some games look better raw"), game-specific advice, router and Wi-Fi pla
 1. Vendor `fov_stream_geometry.py` + `lib.fov_vars`; port `FovValidator`, `FitEye`, `GameRenderSize`, the `Advice.cs` rules, the log parsers.
 2. Golden vectors: run the C# originals through the harness on the builder (when it is back) or, until then, through the Python references that already self-test, plus the worked numbers in the docs (AVP_FOV tables, the 0.29 vs 0.47 bits-per-pixel example, the generation caps) as hand-checkable cases.
 3. Real-log fixtures: the 2026-11-15 sessions (sanitised) as `parse_*` and `diagnose` cases.
-4. The MCP server (stdio, stdlib) exposing the 8 tools; **spike first**: confirm opencode 2.3's MCP discovery, the `<server>_<tool>` permission names, and whether a 12B fills the typed schemas reliably (tool-call accuracy is the first eval family).
-5. Fallback if MCP misbehaves: the same functions as allow-listed `python tools\afxr.py <tool> --json ...` shell commands.
+4. The CLI (`tools/afxr.py` + `afxr.bat`, stdlib) exposing the 12 tools, and the generated `agent/TOOLS.md`. **Spike first**: (a) does a 12B emit correct commands from the `TOOLS.md` examples (tool-call accuracy over the FAQ prompts, measured by parsing the command strings in transcripts); (b) do opencode 2.3's shell permission patterns match the commands as the model writes them (`afxr.bat`, `agentic\\afxr.bat`, `.\\agentic\\afxr.bat`, `agentic/afxr.bat`), and which variants fall back to "ask"; (c) start-up cost of one call on the user's PC (lazy-import numpy).
+5. If the model's command wording proves unreliable: tighten the grammar (fewer keys, defaults), add the usage-and-did-you-mean retry, and only then consider typed tooling. No MCP unless the spike shows the shell route cannot work.
 
 ## 6. Risks
-Tool-count creep (cap the surface at 8-10; grow the library, not the menu); a ported rule drifting from the C# (golden vectors, rerun on each AirFrameXR version, by hand at first); a curated rule that is only my reading of a doc (`symptom_to_edge`: mark it, get the author's confirmation); the model ignoring `conclusion` and re-deriving (the eval counts it); results too verbose for the context (cap `facts`, keep `conclusion` short).
+Tool-count creep (cap the surface at 8-10; grow the library, not the menu); the model mistyping a command (mitigated by the forgiving grammar, the usage retry and a measured accuracy gate); a ported rule drifting from the C# (golden vectors, rerun on each AirFrameXR version, by hand at first); a curated rule that is only my reading of a doc (`symptom_to_edge`: mark it, get the author's confirmation); the model ignoring `conclusion` and re-deriving (the eval counts it); results too verbose for the context (cap `facts`, keep `conclusion` short).

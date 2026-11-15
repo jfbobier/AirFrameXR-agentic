@@ -128,11 +128,11 @@ human: false           # true = written or edited by you: the generator never ov
 |---|---|---|
 | M0 | `kb/` skeleton; FAQ schema + 20-30 seed entries (draft) for your review; the vendored `fov_stream_geometry.py`; `fov_check` / `fov_plan` / `calc` with golden vectors from the docs' worked numbers; `kb check` for keys and log patterns | Linux only |
 | M1 | the Advice.cs rules and log parsers (`diagnose`, `afxr_status`), the game-record reader (`game_stats`) and the Black Box report parser and lever map (`blackbox`, fixture: the 2026-10-30 5090 recording); `resolution_plan` on the vendored geometry; facts YAML (`explain_setting`); `propose_change` / `apply_change` / `undo_change` with backup and journal; the renderer for tiers 0-1 and the token report | Linux only |
-| M2 | **MCP spike** (opencode 2.3 discovery, permission names, a 12B's tool-call accuracy), the runner and scorer, scenarios from the FAQ, the baseline | the 5090 |
+| M2 | **shell-CLI spike** (a 12B's command accuracy from `TOOLS.md`, opencode permission-pattern matching for the command variants, per-call start-up cost), the runner and scorer, scenarios from the FAQ, the baseline | the 5090 |
 | M3 | A/B experiments (section 4 of the earlier plan) plus tool vs no-tool for each FAQ entry | the 5090 |
 | M4 | KB-by-version artifact and the `update-docs` change; the by-hand `kb check` routine documented | GitHub only |
 | M5 | field loop: journal outcomes, new FAQ entries from real questions | users |
 Golden vectors from the C# originals wait for the builder; until then the Python references that already self-test and the worked numbers in the docs stand in.
 
 ## 12. Status
-Plan and tool catalog committed 2026-11-15 (`docs/TOOL_CATALOG.md` section I: curated rules reviewed by the author). **Execution waits for the builder** (golden vectors from the C# originals, the Black Box fixtures, the MCP spike on the 5090). Nothing in `kb/` or `tools/` exists yet.
+Plan and tool catalog committed 2026-11-15 (`docs/TOOL_CATALOG.md` section I: curated rules reviewed by the author). **Execution waits for the builder** (golden vectors from the C# originals, the Black Box fixtures, the shell-CLI spike on the 5090). Nothing in `kb/` or `tools/` exists yet.
