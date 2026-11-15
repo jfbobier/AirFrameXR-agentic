@@ -1,0 +1,33 @@
+@echo off
+call "C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\VC\Auxiliary\Build\vcvars64.bat"
+set ROOT=D:\vllm-build
+set CUDA_HOME=C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v13.5
+set CUDA_PATH=%CUDA_HOME%
+set PATH=%ROOT%\venv\Scripts;%CUDA_HOME%\bin;C:\Program Files\Git\cmd;%USERPROFILE%\.cargo\bin;C:\Strawberry\perl\bin;%LOCALAPPDATA%\Microsoft\WinGet\Links;%PATH%;C:\Program Files\Git\usr\bin
+set GIT_CONFIG_COUNT=1
+set GIT_CONFIG_KEY_0=safe.directory
+set GIT_CONFIG_VALUE_0=*
+set TORCH_CUDA_ARCH_LIST=12.0a
+set VLLM_TARGET_DEVICE=cuda
+set CMAKE_BUILD_TYPE=Release
+set VLLM_DISABLE_SCCACHE=1
+set SETUPTOOLS_SCM_PRETEND_VERSION=0.33.0
+set MAX_JOBS=8
+set VLLM_CUDA_SHIM_DIR=D:/vllm-build/shim
+set NVCC_THREADS=2
+set VLLM_RS_BUILD_VERSION=0.33.0
+set OPENSSL_SRC_PERL=C:\Strawberry\perl\bin\perl.exe
+for /f "delims=" %%i in ('where protoc 2^>nul') do set PROTOC=%%i
+cd /d %ROOT%\vllm
+set VLLM_USE_LOCAL_PRECOMPILED=1
+set VLLM_SKIP_PRECOMPILED_VERSION_SUFFIX=1
+set VLLM_VERSION_OVERRIDE=0.33.0
+echo === native modules
+dir /b vllm\*.pyd vllm\vllm-rs.exe vllm\vllm_flash_attn\*.pyd 2>nul
+echo === wheel
+set UV_CACHE_DIR=%ROOT%\uv-cache
+set UV_LINK_MODE=copy
+uv build --wheel --no-build-isolation --python %ROOT%\venv\Scripts\python.exe --out-dir %ROOT%\dist
+echo WHEEL rc=%ERRORLEVEL%
+dir /b %ROOT%\dist
+echo WHEEL FINISHED

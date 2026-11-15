@@ -1,0 +1,7 @@
+runtime/
+logs/
+state/
+notes/
+docs-cache/
+config/opencode.user.json
+*.whl

@@ -1,0 +1,11 @@
+{
+  "_comment": "The self-built vLLM wheel (native Windows, native SM120 FP8/NVFP4 kernels). Hosted as a GitHub release asset of this repo. Build recipe and patches: see README, section 'Where the wheel comes from'.",
+  "version": "0.33.0",
+  "file": "vllm-0.33.0-cp313-cp313-win_amd64.whl",
+  "url": "https://github.com/jfbobier/AirFrameXR-agentic/releases/download/vllm-0.33.0-win-sm120/vllm-0.33.0-cp313-cp313-win_amd64.whl",
+  "sha256": "dcf5be2cc11a5c82f2f491a044f524de65d9dc0ea60d66113a76b0ce42fea292",
+  "python": "3.13",
+  "torchIndex": "https://download.pytorch.org/whl/cu130",
+  "uvVersion": "0.12.13",
+  "opencodeVersion": "1.19.5"
+}
