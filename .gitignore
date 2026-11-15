@@ -5,3 +5,4 @@ notes/
 docs-cache/
 config/opencode.user.json
 *.whl
+scratch/

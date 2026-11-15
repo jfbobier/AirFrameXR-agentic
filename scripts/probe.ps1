@@ -16,6 +16,7 @@ if ($gpu) {
 $L.Add("- Agent folder (this repo): $($script:Root)")
 $L.Add("- Docs for AirFrameXR (copies of the project docs, read these first): $($script:Root)\docs-cache  (index: $($script:Root)\agent\docs-index.md)")
 $L.Add("- Playbooks (already loaded for you; reread a part when unsure): $($script:Root)\agent\playbook\")
+$L.Add("- Scratch folder (yours: write drafts and intermediate results here without asking, files older than 7 days are removed for you): $($script:Scratch)")
 $L.Add("- Change journal (you write it, you read it at session start): $($script:Root)\notes\changes.md")
 $f = Join-Path $script:RT 'cache\docs_fetched.txt'
 if (Test-Path $f) { $L.Add('- Docs copied on: ' + (Get-Content -Raw $f).Trim() + ' (they describe the main branch; the installed build may be older, check the release notes when a key from the docs is missing)') }

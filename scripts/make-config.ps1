@@ -17,6 +17,7 @@ Add-Perm 'external_directory' "$rootS/*" 'allow'
 if ($afxr) { Add-Perm 'external_directory' ($afxr.Replace('\', '/') + '/*') 'allow' }
 Add-Perm 'edit' '*' 'ask'                                 # every config change shows its diff and waits for you
 Add-Perm 'edit' "$rootS/notes/*" 'allow'                  # the change journal
+Add-Perm 'edit' "$rootS/scratch/*" 'allow'                # the model's temp folder (drafts, intermediate results); nothing else is writable without asking
 Add-Perm 'webfetch' '*' 'ask'
 Add-Perm 'webfetch' 'https://raw.githubusercontent.com/jfbobier/*' 'allow'
 Add-Perm 'webfetch' 'https://github.com/jfbobier/*' 'allow'

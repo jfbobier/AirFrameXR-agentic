@@ -11,6 +11,7 @@ $script:UvExe   = Join-Path $script:RT 'tools\uv\uv.exe'
 $script:OpenCodeExe = Join-Path $script:RT 'tools\opencode\opencode.exe'
 $script:StateDir = Join-Path $script:Root 'state'
 $script:LogDir   = Join-Path $script:Root 'logs'
+$script:Scratch  = Join-Path $script:Root 'scratch'      # the model's own temp folder: it may write here without asking; the code prunes it
 
 
 # Native programs (uv, curl, python) write progress to stderr. Windows PowerShell 5.1 turns that into terminating errors under
@@ -40,7 +41,7 @@ function Initialize-Contained {
     foreach ($d in 'cache\huggingface\hub','cache\vllm','cache\torch','cache\torchinductor','cache\triton','cache\cuda','cache\uv','python','tools','tmp','config\xdg','config\xdg-data','config\xdg-state','cache\xdg') {
         New-Item -ItemType Directory -Force (Join-Path $script:RT $d) | Out-Null
     }
-    New-Item -ItemType Directory -Force $script:StateDir, $script:LogDir | Out-Null
+    New-Item -ItemType Directory -Force $script:StateDir, $script:LogDir, $script:Scratch | Out-Null
     $c = Join-Path $script:RT 'cache'
     $e = @{
         HF_HOME = "$c\huggingface"; HF_HUB_CACHE = "$c\huggingface\hub"; HUGGINGFACE_HUB_CACHE = "$c\huggingface\hub"

@@ -8,6 +8,9 @@ Initialize-Contained
 $m = Get-Model
 foreach ($need in $script:VllmExe, $script:OpenCodeExe) { if (-not (Test-Path $need)) { throw "Not installed ($need). Run install.bat first." } }
 
+# 0. the model's scratch folder: the code (not the model) removes what is older than 7 days
+Get-ChildItem $script:Scratch -Recurse -File -ErrorAction SilentlyContinue | Where-Object { $_.LastWriteTime -lt (Get-Date).AddDays(-7) } | Remove-Item -Force -ErrorAction SilentlyContinue
+
 # 1. server
 if (Test-Api) { Write-Host 'Model server already running.' }
 else {
