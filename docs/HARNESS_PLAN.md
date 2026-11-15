@@ -1,4 +1,4 @@
-# Knowledge-base harness: plan (draft, 2026-11-15)
+# Knowledge-base harness: plan (draft v2, 2026-11-15)
 
 Goal: the files the agent reads (`agent/AGENTS.md`, `agent/playbook/*.md`, `agent/docs-index.md`, and what we add) are **generated from AirFrameXR's
 own sources, checked against them, and scored by a fixed set of scenarios**, so that when AirFrameXR changes the knowledge base changes with it, and
@@ -67,7 +67,7 @@ Scenario = a fixture AirFrameXR folder (config + log excerpt, sanitised) + a use
 Tier-1 size (0 / 15k / 30k tokens), ordering (important first and last), examples in the digests (worked proposals), the symptom router's form (table vs
 prose), fact-style rules ("never X") vs positive rules, English only vs the user's language, brief length. Keep whatever raises the pass rate; delete the rest (lean).
 
-## 5. Milestones
+## 5. Milestones (superseded by section 11)
 
 | | Content | Needs | Done when |
 |---|---|---|---|
@@ -84,11 +84,52 @@ prose), fact-style rules ("never X") vs positive rules, English only vs the user
 - Say what was tested: every KB release carries its eval report; untested advice is marked as such in the text the agent reads.
 - No new settings or modes without a measurement; manual over automatic.
 
-## 7. Decisions needed
-1. **Where the KB lives**: this repo (recommended: AirFrameXR stays free of assistant files) or `docs/` in AirFrameXR. Optional later: AirFrameXR emits a `docs/knobs.json` so scraping tables becomes reading data (docs are allowed without asking; it would be a separate change there).
-2. **The judge**: Claude offline at development time (recommended, small cost, never shipped) or mechanical checks only (cheaper, weaker on explanations).
-3. **Real logs as fixtures**: sanitised excerpts from your own sessions (better) or synthetic only (safer).
-4. **Cadence**: weekly drift check plus on every AirFrameXR tag, or only on tags.
+## 7. Decisions (taken 2026-11-15)
+1. The KB lives in **this repo** (`kb/`), AirFrameXR stays free of assistant files. A `docs/knobs.json` in AirFrameXR stays an optional later improvement.
+2. **Claude pre-generates and judges, offline, at development time** (facts drafts, the FAQ seed, digests, rubric judging). The shipped agent never calls it. Generated text enters only with source pointers and review.
+3. Fixtures: **sanitised real logs** plus synthetic variants.
+4. **Drift is managed by hand, in step with the runtime's version.** No scheduled CI: a person runs `kb check` when AirFrameXR is tagged. The checks of section 1 stay, as commands, not as a service.
+5. The weak model gets **deterministic tools, not just text**: section 9 and `docs/TOOL_CATALOG.md`. Python (stdlib), no .exe.
 
 ## 8. Risks
 Scenario noise with a small model (hence N = 5 and paired seeds); overfitting to our scenarios (hold-out); a judge that flatters (rubric + spot checks); the KB growing past what the model can use (token cap, long-context scenario in every run); doc scraping breaking on a table format change (the ingest tests fail loudly, M0); the 12B model itself being the ceiling (the matrix tells us when to move).
+
+## 9. The tool layer: offload reasoning to code (`docs/TOOL_CATALOG.md`)
+A small model cannot be relied on for tangent arithmetic, threshold rules or valid JSON edits; it can pick a named tool and fill typed parameters. So the
+KB is two things: **text** (brief, digests, FAQ) for what is judgement and wording, and **tools** for what is a rule or a number. Eight intent-level tools
+(`afxr_status`, `diagnose`, `explain_setting`, `fov_check`, `fov_plan`, `calc`, `propose_change`, `apply_change`/`undo_change`) over an internal library of pure
+functions ported from AirFrameXR's own code (`Advice.cs`, `FovValidator`, `PipelineModel`, `harness/fov_stream_geometry.py`) and proven with golden vectors
+generated from the originals. Writes go through `propose_change` -> user approval -> `apply_change` (backup, atomic write, parse check, journal), so "one change at a time"
+is enforced by code. Served as a small stdlib MCP server in the Python that already ships with vLLM; fallback: allow-listed `python tools\afxr.py` commands.
+New eval family: **tool-call accuracy** (right tool, valid arguments, the model reports the `conclusion` rather than re-deriving).
+
+## 10. The FAQ: the spine of the KB (you amend it by hand)
+`kb/faq/*.yaml`, one entry per question:
+```yaml
+id: fov-black-band-bottom
+questions: ["I like the shipped profile but I see a box when I look down", "black strip at the bottom of the picture", ...]   # the user's own wording, several variants
+answer: |      # a procedure, not an essay; names tools, not formulas
+  1. fov_check on the current profile.  2. fov_plan(symptom="black_band", edge="lower", amount="a_little").
+  3. Tell the user the new value and the pixel cost; they type it in the FOV card; restart the streamer, start the game anew.  4. Ask them to check with fovgrid.exe.
+tools: [fov_check, fov_plan]
+verify: "the bottom border of fovgrid.exe touches the edge of the view"
+sources: ["docs/AVP_FOV.md#Check it", "tools/gui/UserFovProfiles.cs FovValidator"]
+status: draft          # draft | verified (author) | untested-caveat
+human: false           # true = written or edited by you: the generator never overwrites it
+```
+- **Seed**: I draft entries from the docs, README, `progress.md`, the validator's and advisor's messages and your support history if you share it; every entry starts `draft`.
+- **Merge rule**: `human: true` entries win; the generator proposes changes to them as a diff for you to accept.
+- **Drift**: `kb check` flags an entry whose sources changed since it was last reviewed (that is your manual versioning signal).
+- **Eval**: every FAQ entry becomes a scenario (its question variants as prompts; expected tools, expected arguments, forbidden actions), so adding an entry adds a test.
+- **Render**: the FAQ is part of tier 1 (loaded whole while it fits the budget); the model finds the matching entry by wording, then follows its procedure.
+
+## 11. Milestones (revised)
+| | Content | Needs |
+|---|---|---|
+| M0 | `kb/` skeleton; FAQ schema + 20-30 seed entries (draft) for your review; the vendored `fov_stream_geometry.py`; `fov_check` / `fov_plan` / `calc` with golden vectors from the docs' worked numbers; `kb check` for keys and log patterns | Linux only |
+| M1 | the Advice.cs rules and log parsers (`diagnose`, `afxr_status`); facts YAML (`explain_setting`); `propose_change` / `apply_change` / `undo_change` with backup and journal; the renderer for tiers 0-1 and the token report | Linux only |
+| M2 | **MCP spike** (opencode 2.3 discovery, permission names, a 12B's tool-call accuracy), the runner and scorer, scenarios from the FAQ, the baseline | the 5090 |
+| M3 | A/B experiments (section 4 of the earlier plan) plus tool vs no-tool for each FAQ entry | the 5090 |
+| M4 | KB-by-version artifact and the `update-docs` change; the by-hand `kb check` routine documented | GitHub only |
+| M5 | field loop: journal outcomes, new FAQ entries from real questions | users |
+Golden vectors from the C# originals wait for the builder; until then the Python references that already self-test and the worked numbers in the docs stand in.
