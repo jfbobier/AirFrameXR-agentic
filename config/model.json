@@ -15,5 +15,5 @@
   "extraServeArgs": [
     "--language-model-only"
   ],
-  "measured": false
+  "measured": true
 }

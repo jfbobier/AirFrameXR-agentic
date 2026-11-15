@@ -33,6 +33,7 @@ if (-not (Test-Afxr $afxr)) {
     $afxr = (Read-Host 'Path of the folder that contains AirFrameXR.exe').Trim('"').Trim()
 }
 if (-not (Test-Afxr $afxr)) { throw "AirFrameXR.exe not found in '$afxr'. Put setup.bat in your AirFrameXR folder, or enter its path." }
+$afxr = [IO.Path]::GetFullPath($afxr).TrimEnd('\')
 Say "AirFrameXR folder: $afxr"
 
 $target = Join-Path $afxr 'agentic'
