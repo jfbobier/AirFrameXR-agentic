@@ -51,5 +51,15 @@ $work = $script:Root
 if ($afxr) { $work = $afxr }
 Set-Location $work
 Write-Host "Agent working folder: $work"
+$job = $null
+if ($afxr) { $job = Start-Process powershell.exe -ArgumentList @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', "`"$PSScriptRoot\config-journal.ps1`"", '-AirFrameXRDir', "`"$afxr`"") -WindowStyle Hidden -PassThru }
 & $script:OpenCodeExe
+if ($job) {
+    Stop-Process -Id $job.Id -Force -ErrorAction SilentlyContinue
+    $auto = Join-Path $script:Root 'notes\auto-journal.md'
+    if (Test-Path $auto) {
+        $new = @(Get-Content $auto | Where-Object { $_ -like "- $((Get-Date).ToString('yyyy-MM-dd'))*" })
+        if ($new.Count -gt 0) { Write-Host ''; Write-Host "Config changes recorded today (old versions are in $($script:Root)\history):" -ForegroundColor Cyan; $new | Select-Object -Last 8 | ForEach-Object { Write-Host "  $_" } }
+    }
+}
 if (-not $KeepRunning) { & "$PSScriptRoot\stop.ps1" -Quiet | Out-Null; Write-Host 'Model server stopped, VRAM released.' }

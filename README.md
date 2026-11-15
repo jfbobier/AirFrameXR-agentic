@@ -11,7 +11,7 @@ does is what this repository is for finding out.
 
 - **Self-contained.** One folder. `install.bat` puts Python, vLLM, the agent shell and the model inside `runtime\`; delete the folder to uninstall.
 - **Local.** No cloud model, no account, no API key, nothing about your PC leaves it. The only network use is the install (GitHub, PyPI, PyTorch, Hugging Face) and copying AirFrameXR's docs from GitHub.
-- **Safe by default.** Every file edit, every shell command beyond read-only ones, and every access outside the two folders it needs asks you first. It cannot touch the registry, the firewall or AirFrameXR's program files without you.
+- **Safe by default.** The assistant can write only `config\airframexr.json`, `config\user_fov_profiles.json`, its own `scratch\` and its journal; `logs\`, `bin\`, `session.json` and the program's game records are read-only. Everything else, every shell command beyond read-only ones, and every access outside the two folders it needs asks you first. It cannot touch the registry, the firewall or AirFrameXR's program files. **Every old version of a config file is kept automatically** (`history\<time>\config\`, listed in `notes\auto-journal.md`) whoever changed it, and a file that stops being valid JSON is put back at once.
 - **The weights are not in this repo.** They are downloaded from Hugging Face at a pinned revision (`config\model.json`).
 
 ## Requirements
@@ -75,6 +75,7 @@ Nothing here is "works" until its row says so.
 | Tool calls through the `gemma4` parser, opencode 2.3.0 | **passed**: `opencode run` made grep/read calls and read-only commands; `eval\agent_eval.py` 5/5 (reads evidence first, refuses an invented key, will not touch the registry, proposes with restart rule and verification) |
 | opencode accepts the generated config and enforces the permission rules | **passed** headless: asks are auto-rejected in a non-interactive run (an edit and a delete were blocked). **Not tested**: the interactive TUI approval flow |
 | Nothing leaves the PC | opencode falls back to its own hosted free models when no local model answers (seen in a test run). `enabled_providers: ["vllm"]` plus `OPENCODE_DISABLE_FREE_MODELS`/`MODELS_FETCH`/`AUTOUPDATE` are now set; with the server down the run fails with "No model is available". **Not audited**: a packet capture of a full session |
+| Config history (`scripts\config-journal.ps1`) | **passed** on the RTX 5090 PC with a fake config folder: a valid change archives the old version, invalid JSON is reverted and the refused content kept, `session.json` ignored, creation and deletion recorded. **Not tested**: running beside a real session; the edit tool actually being denied on `logs\` and `session.json` by opencode (the rules are generated and accepted, enforcement not exercised); a model proposing and the user approving in chat before an edit (this is the brief's rule, not a technical gate) |
 | Answer quality against real AirFrameXR logs | **partly**: one scenario (judder in a game, real log), 2-3 runs per model, judged by hand. Proposals were grounded in the log and the playbook but not always the best lever. No headset test of any proposed change |
 | 16 GB card (RTX 5070 Ti) | not run: 13 GB is capped on a 32 GB card; a real 16 GB card also carries the Windows desktop (about 1-1.5 GB) |
 

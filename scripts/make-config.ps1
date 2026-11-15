@@ -18,6 +18,12 @@ if ($afxr) { Add-Perm 'external_directory' ($afxr.Replace('\', '/') + '/*') 'all
 Add-Perm 'edit' '*' 'ask'                                 # every config change shows its diff and waits for you
 Add-Perm 'edit' "$rootS/notes/*" 'allow'                  # the change journal
 Add-Perm 'edit' "$rootS/scratch/*" 'allow'                # the model's temp folder (drafts, intermediate results); nothing else is writable without asking
+if ($afxr) {                                              # AirFrameXR's own folder: what the assistant may write, and what is read-only
+    $a = $afxr.Replace('\', '/')
+    Add-Perm 'edit' "$a/config/airframexr.json" 'allow'    # the settings it may change; every change is archived by config-journal.ps1 and reverted if it stops being valid JSON
+    Add-Perm 'edit' "$a/config/user_fov_profiles.json" 'allow'
+    foreach ($ro in 'config/session.json', 'config/games.json', 'config/games/*', 'logs/*', 'bin/*') { Add-Perm 'edit' "$a/$ro" 'deny' }   # compiled / machine-written records / logs / program files: read-only
+}
 Add-Perm 'webfetch' '*' 'ask'
 Add-Perm 'webfetch' 'https://raw.githubusercontent.com/jfbobier/*' 'allow'
 Add-Perm 'webfetch' 'https://github.com/jfbobier/*' 'allow'
