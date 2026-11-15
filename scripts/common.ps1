@@ -88,6 +88,9 @@ function Find-AirFrameXR {
         $d = (Get-Content -Raw $remember).Trim()
         if ($d -and (Test-Path (Join-Path $d 'AirFrameXR.exe'))) { return $d }
     }
+    # installed inside the AirFrameXR folder (<AirFrameXR>\agentic)? then the parent is it
+    $par = Split-Path -Parent $script:Root
+    if ($par -and (Test-Path (Join-Path $par 'AirFrameXR.exe'))) { return $par }
     try {
         $rt = (Get-ItemProperty 'HKLM:\SOFTWARE\Khronos\OpenXR\1' -Name ActiveRuntime -ErrorAction Stop).ActiveRuntime
         if ($rt) {
