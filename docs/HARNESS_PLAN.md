@@ -100,7 +100,7 @@ KB is two things: **text** (brief, digests, FAQ) for what is judgement and wordi
 (`afxr_status`, `diagnose`, `game_stats`, `blackbox`, `explain_setting`, `fov_check`, `fov_plan`, `resolution_plan`, `calc`, `propose_change`, `apply_change`, `undo_change`) over an internal library of pure
 functions ported from AirFrameXR's own code (`Advice.cs`, `FovValidator`, `PipelineModel`, `harness/fov_stream_geometry.py`) and proven with golden vectors
 generated from the originals. Writes go through `propose_change` -> user approval -> `apply_change` (backup, atomic write, parse check, journal), so "one change at a time"
-is enforced by code. Served as a small stdlib MCP server in the Python that already ships with vLLM; fallback: allow-listed `python tools\afxr.py` commands.
+is enforced by code. Delivered as a stdlib CLI (`agentic\afxr.bat <tool> key=value ...`) in the Python that already ships with vLLM, described to the model by the loaded `agent/TOOLS.md` (generated from `kb/tools/catalog.yaml`, the single source for the docs, the CLI parser and the eval cases). No MCP server: leaner, and the user can reproduce any call in a terminal.
 New eval family: **tool-call accuracy** (right tool, valid arguments, the model reports the `conclusion` rather than re-deriving).
 
 ## 10. The FAQ: the spine of the KB (you amend it by hand)
