@@ -18,7 +18,7 @@ $script:LogDir   = Join-Path $script:Root 'logs'
 function Invoke-Native([string]$Exe, [string[]]$ArgList) {
     $old = $ErrorActionPreference; $ErrorActionPreference = 'Continue'
     try {
-        & $Exe @ArgList 2>&1 | ForEach-Object { Write-Host ("   " + $_.ToString()) }
+        & $Exe @ArgList 2>&1 | ForEach-Object { $t = $_.ToString(); if ($t -and $t -ne 'System.Management.Automation.RemoteException') { Write-Host ("   " + $t) } }
         return $LASTEXITCODE
     } finally { $ErrorActionPreference = $old }
 }

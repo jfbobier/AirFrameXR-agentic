@@ -48,7 +48,7 @@ Nothing here is "works" until its row says so.
 | Item | State |
 |---|---|
 | Scripts parse in Windows PowerShell 5.1 | checked |
-| Fresh install into an empty folder on the RTX 5090 PC | not run yet |
+| Fresh install into an empty folder on the RTX 5090 PC (2026-11-15, `install.bat -SkipModel`, then with the model) | **passed**: uv, Python 3.13, torch cu130 + 153 pinned packages, the wheel (checksum verified), smoke test on the GPU (matmul, FP8, NVFP4 all OK), opencode 1.19.5, docs copy, model download (8.7 GB, 96 s on that line); total env about 8.5 GB. Not run: a PC without the previous vLLM, the wheel download from the GitHub release (the repo is not published yet: a local wheel with the same checksum was used) |
 | Gemma 4 12B NVFP4 loads on vLLM 0.33 in a 12 GB budget | not run yet |
 | Tool calls through the `gemma4` parser | not run yet |
 | opencode accepts the generated config and permission rules | not run yet |
